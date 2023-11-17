@@ -7,12 +7,16 @@ Welcome to the VS Code Java world. Here is a guideline to help you get started t
 The workspace contains two folders by default, where:
 
 - `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+- `resources`: contain any files that is ouptput or downloaded (e.g. images, text files, etc.)
+- `tests`: the folder to maintain test cases
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+## About the Project
+All files needed for exercise should be placed in resources file
 
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+### Exercies 1
+To compile, run following commands (You are at the `src` folder):
+```
+javac Lab05_1.java Console.java
+java Lab05_1
+```
