@@ -21,3 +21,8 @@ build/
 # Operating System files
 .DS_Store
 Thumbs.db
+
+# Encryption and decryption files for testing
+*.bin
+*.enc
+*.dec

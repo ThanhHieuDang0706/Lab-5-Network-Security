@@ -3,5 +3,17 @@
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
-    ]
+    ],
+    "[ignore]": {
+        "files.exclude": {
+            "**/.classpath": true,
+            "**/.project": true,
+            "**/.settings": true,
+            "**/.factorypath": true
+        },
+        "search.exclude": {
+            "**/bin": true,
+            "**/lib": true
+        }
+    }
 }

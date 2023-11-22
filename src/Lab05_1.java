@@ -2,9 +2,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +16,13 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -101,7 +108,7 @@ public class Lab05_1 {
         String fileToProcessPathInput = fileToProcessPathInput();
         String keyFileName = keyFileNameInput();
 
-        doAction(choice, modeChoice, keyFileName, fileToProcessPathInput);
+        doActionDES(choice, modeChoice, keyFileName, fileToProcessPathInput);
     }
 
     private int modeSelection() {
@@ -194,22 +201,59 @@ public class Lab05_1 {
             return ivspec;
         }
         if (type == TypeSelectionChoice.DECRYPT) {
-            byte[] ivForDecryption = Arrays.copyOfRange(content.getBytes(), 0, 8);
+            byte[] data = content.getBytes();
+            byte[] ivBase64 = Arrays.copyOfRange(data, 0, 12);
+            byte[] ivForDecryption = Base64.getDecoder().decode(ivBase64);
             IvParameterSpec ivspec = new IvParameterSpec(ivForDecryption);
             return ivspec;
         }
         throw new RuntimeException("Invalid type! " + type);
     }
 
+    private byte[] appendIvToResult(byte[] iv, byte[] result) {
+        byte[] resultWithIv = new byte[iv.length + result.length];
+        System.arraycopy(iv, 0, resultWithIv, 0, iv.length);
+        System.arraycopy(result, 0, resultWithIv, iv.length, result.length);
+        return resultWithIv;
+    }
+
+    private boolean isPaddingMode(int mode) {
+        if (mode == ModeSelection.DES_CBC_PKCS5_PADDING || mode == ModeSelection.DES_ECB_PKCS5_PADDING) {
+            return true;
+        }
+        return false;
+    }
+
+    private byte[] getBytes(String text, int type, int mode) {
+        byte[] bytes = text.getBytes();
+        if (type == TypeSelectionChoice.ENCRYPT) {
+            if (isPaddingMode(mode)) {
+                int paddingLength = 8 - (bytes.length % 8);
+                byte[] paddedBytes = new byte[bytes.length + paddingLength];
+                System.arraycopy(bytes, 0, paddedBytes, 0, bytes.length);
+                for (int i = bytes.length; i < paddedBytes.length; i++) {
+                    paddedBytes[i] = (byte) paddingLength;
+                }
+                return paddedBytes;
+            }
+            else {
+                return bytes;
+            }
+        }
+
+        return bytes;
+    }
+
+
     /**
      * Read input from users. And then do the respective actions based on the input. 
      *
      * @param type             the type of action to perform (encode or decode)
-     * @param modeChoice       the mode choice for the cipher algorithm
+     * @param mode       the mode choice for the cipher algorithm
      * @param keyFilePath      the file path of the key file
      * @param fileToProcessPath the file path of the file to process
      */
-    private void doAction(int type, int modeChoice, String keyFilePath, String fileToProcessPath) {
+    private void doActionDES(int type, int mode, String keyFilePath, String fileToProcessPath) {
         
         try {
             long startTime = System.currentTimeMillis();
@@ -222,15 +266,9 @@ public class Lab05_1 {
             // PrintUtils.printInlineWithColor("File content: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
             // PrintUtils.printInlineWithColor(fileToProcessContent + "\n");
 
-            byte[] keyBytes = keyContent.getBytes();
-            DESKeySpec desKeySpec = new DESKeySpec(keyBytes);
-     
-            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
-            Key secretKey = keyFactory.generateSecret(desKeySpec);
-            
             Cipher cipher;
             
-            switch (modeChoice) {
+            switch (mode) {
                 case ModeSelection.DES_CBC_NO_PADDING:
                     cipher = Cipher.getInstance("DES/CBC/NoPadding");
                     break;
@@ -247,39 +285,19 @@ public class Lab05_1 {
                     throw new Exception("Invalid mode choice!");
             }
 
-            cipher.init(type == TypeSelectionChoice.ENCRYPT ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, secretKey);
-            
-            // do the encryption/decryption and measure execution time here
-            byte[] result = cipher.doFinal(type ==TypeSelectionChoice.ENCRYPT ? fileToProcessContent.getBytes() : Base64.getDecoder().decode(fileToProcessContent));
+            String textResult = "";
 
-            byte[] basde64Result = Base64.getEncoder().encode(result);
-            String textResult = type == TypeSelectionChoice.ENCRYPT ? new String(basde64Result, StandardCharsets.UTF_8) : new String(result, StandardCharsets.UTF_8);
-
-            // For debugging purporse
-            // if (type == TypeSelectionChoice.ENCRYPT) {
-            //     PrintUtils.printWithColor("The encoded result is: ", PrintUtils.ConsoleColors.GREEN);
-            //     PrintUtils.print(textResult);
-            // }
-            // else {
-            //     PrintUtils.printWithColor("The decoded result is: ", PrintUtils.ConsoleColors.GREEN);
-            //     PrintUtils.print(textResult);
-            // }
+            switch(type) {
+                case TypeSelectionChoice.DECRYPT:
+                    textResult = decrypt(cipher, type, mode, keyContent, fileToProcessContent);
+                    break;
+                case TypeSelectionChoice.ENCRYPT:
+                    textResult = encrypt(cipher, type, mode, keyContent, fileToProcessContent);
+                    break;
+            }
 
             // write out the result to file, if decrypt output.dec else output.enc
-            String outputFileName = type == TypeSelectionChoice.ENCRYPT ? "output.enc" : "output.dec";
-            outputFileName = getResourceFolderPath() + outputFileName;
-            PrintUtils.printWithColor("Output will be in the this path: " + outputFileName, PrintUtils.ConsoleColors.GREEN);            
-            File outputFile = new File(outputFileName);
-            if (!outputFile.exists()) {
-                outputFile.createNewFile();
-            }
-            else {
-                outputFile.delete();
-                outputFile.createNewFile();
-            }
-            FileWriter fileWriter = new FileWriter(outputFile);
-            fileWriter.write(textResult);
-            fileWriter.close();
+            dumpOutputToFile(type, textResult);
             printTimePassed(startTime, System.currentTimeMillis());
         }
         catch(InvalidKeyException e) {
@@ -412,5 +430,106 @@ public class Lab05_1 {
 
     private long calculateDiffTimeInMiliseconds(long startTimeMillis, long endTimeMillis) {
         return Math.abs(startTimeMillis - endTimeMillis);
+    }
+
+    private String encrypt (Cipher cipher, int type, int mode, String key, String content) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        byte[] keyBytes = key.getBytes();
+        DESKeySpec desKeySpec = new DESKeySpec(keyBytes);
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+        Key secretKey = keyFactory.generateSecret(desKeySpec);
+        IvParameterSpec ivspec = null;
+        if (isPaddingMode(mode)){
+            ivspec = getIvSpecForCBCCipher(type, mode, key, content);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+        }
+        else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        }
+
+        byte[] result = cipher.doFinal(
+            getBytes(content, type, mode)
+        );
+        byte[] base64Result = Base64.getEncoder().encode(result);
+
+        // apend iv to the beginning of the result
+        if (isPaddingMode(mode) && ivspec != null) {
+            byte[] iv = Base64.getEncoder().encode(ivspec.getIV());
+            byte[] resultWithIv = appendIvToResult(iv, base64Result);
+            base64Result = resultWithIv;
+        }
+
+        String textResult = new String(base64Result, Charset.defaultCharset());
+        return textResult;
+    }
+
+    private String decrypt (Cipher cipher, int type, int mode, String key, String content) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException {
+        byte [] keyBytes = key.getBytes();
+        DESKeySpec desKeySpec = new DESKeySpec(keyBytes);
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
+        Key secretKey = keyFactory.generateSecret(desKeySpec);
+        
+        if (!isPaddingMode(mode)){
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        }
+        else {
+            IvParameterSpec ivspec = getIvSpecForCBCCipher(type, mode, key, content);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
+        }
+
+        byte[] bytes = getBytes(content, type, mode);
+        
+        // remove iv from the beginning of the file content
+        byte[] base64Content = new byte[bytes.length - 12];
+        if (isPaddingMode(mode)) {
+            /**
+             * When decoding a Base64 string, every 4 characters represent 3 bytes of data.
+
+                If you want to get 8 bytes of data, you would need a Base64 string that is 11 characters long.
+
+                Here's why:
+
+                8 bytes is 2/3 of 12 bytes.
+                Since every 4 Base64 characters represent 3 bytes, you would need 12 Base64 characters to represent 9 bytes.
+                But since you only need 8 bytes, you can remove one Base64 character, leaving you with 11 Base64 characters.
+                Please note that Base64 encoding requires padding if the number of bytes is not divisible by 3. In this case, the padding character '=' is used. So, if your Base64 string is not a multiple of 4 characters, you would need to add padding to make it valid.
+             */
+
+            // remove iv
+            base64Content = Arrays.copyOfRange(bytes, 12, bytes.length);
+        }
+       
+
+        byte[] result = cipher.doFinal(
+            Base64.getDecoder().decode(base64Content)
+        );
+
+        // remove padding
+        if (isPaddingMode(mode)) {
+            int paddingLength = result[result.length - 1];
+            byte[] resultWithoutPadding = new byte[result.length - paddingLength];
+            System.arraycopy(result, 0, resultWithoutPadding, 0, resultWithoutPadding.length);
+            result = resultWithoutPadding;
+        }
+
+        String textResult = new String(result, StandardCharsets.UTF_8);
+        return textResult;
+    }
+
+
+    private void dumpOutputToFile(int type, String textResult) throws IOException {
+        String outputFileName = type == TypeSelectionChoice.ENCRYPT ? "output.enc" : "output.dec";
+        outputFileName = getResourceFolderPath() + outputFileName;
+        PrintUtils.printWithColor("Output will be in the this path: " + outputFileName, PrintUtils.ConsoleColors.GREEN);            
+        File outputFile = new File(outputFileName);
+        if (!outputFile.exists()) {
+            outputFile.createNewFile();
+        }
+        else {
+            outputFile.delete();
+            outputFile.createNewFile();
+        }
+        FileWriter fileWriter = new FileWriter(outputFile);
+        fileWriter.write(textResult);
+        fileWriter.close();
     }
 }
