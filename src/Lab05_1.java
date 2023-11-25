@@ -11,19 +11,14 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -31,7 +26,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.util.InputMismatchException;
 
 /**
@@ -437,6 +431,9 @@ public class Lab05_1 {
                 if (valid) {
                     return filePath;
                 }
+                else {
+                    PrintUtils.printWithColor("File does not exist! Please try again.", PrintUtils.ConsoleColors.YELLOW_BRIGHT);
+                }
             } catch (Exception e) {
                 PrintUtils.printWithColor("Invalid Choice! Please choose again.",
                         PrintUtils.ConsoleColors.YELLOW_BRIGHT);
@@ -460,6 +457,9 @@ public class Lab05_1 {
                 valid = validateFilePath(filePath);
                 if (valid) {
                     return filePath;
+                }
+                else {
+                    PrintUtils.printWithColor("File does not exist! Please try again.", PrintUtils.ConsoleColors.YELLOW_BRIGHT);
                 }
             } catch (Exception e) {
                 PrintUtils.printWithColor("Invalid Choice! Please choose again.",

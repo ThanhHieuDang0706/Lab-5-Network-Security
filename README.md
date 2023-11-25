@@ -31,4 +31,11 @@ java Lab05_1
 ```
 Or you can use any IDE to run the program.
 
-> The output will be in `src` folder.
+> The output will be in `src` folder
+
+Some results of the program
+| 10mb file | 100mb file | 1GB file |
+|----------|----------|----------|
+| ![CBC Padding 10mb](resources/10MB_CBC_PADDING.png)   | ![ECB mode no padding](resources/100MB_DES-ECB-NoPadding.png)   | ![ECB with padding](resources/1GB_ECB_PKCS5PADDING.png)   |
+| <small>Encrypted time: 438ms | <small>Encrypted time: 5384ms  | <small>Encrypted time: 45697ms  |
+| <small>Decrypted time: 292ms |<small>Decrypted time: 3626ms  | <small>Decrypted time: 36129ms  |
