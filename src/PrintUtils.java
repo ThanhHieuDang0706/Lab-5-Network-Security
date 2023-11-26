@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class PrintUtils {
@@ -102,5 +104,19 @@ public class PrintUtils {
 
     public static void printInlineWithColor(String message, String color, String bg) {
         System.out.print(color + bg + message + ConsoleColors.RESET);
+    }
+
+    public static void printTimePassed(long startTimeMillis, long endTimeMillis) {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:ms");
+        // print startTime in format HH:mm:ss
+        PrintUtils.printInlineWithColor("Start time: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
+        PrintUtils.printInlineWithColor(formatter.format(new Date(startTimeMillis)) + "\n");
+        // print endTime in format HH:mm:ss
+        PrintUtils.printInlineWithColor("End time: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
+        PrintUtils.printInlineWithColor(formatter.format(new Date(endTimeMillis)) + "\n");
+
+        // print time passed in seconds
+        PrintUtils.printInlineWithColor("Time passed: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
+        PrintUtils.printInlineWithColor(Math.abs(startTimeMillis - endTimeMillis) + " ms\n");
     }
 }

@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -313,10 +314,10 @@ public class Lab05_1 {
         }
 
         // ExecutorService executor = Executors.newFixedThreadPool(16);
-        var results = new ConcurrentSkipListMap<Integer, byte[]>();
+        var results = new TreeMap<Integer, byte[]>();
 
         try (FileChannel fc = new FileInputStream(fileToProcessPath).getChannel()) {
-            final int MAP_SIZE = 1024 * 1024 * 32;
+            final int MAP_SIZE = 1024 * 1024 * 32; // 32MB
 
             long fileSize = fc.size();
             long position = 0;
@@ -386,7 +387,7 @@ public class Lab05_1 {
             dumpOutputToFile(type, entry.getValue(), entry.getKey() == 0);
         }
         PrintUtils.printWithColor(getOuptputFileName(type) + " is created!", PrintUtils.ConsoleColors.GREEN);
-        printTimePassed(startTime, System.currentTimeMillis());
+        PrintUtils.printTimePassed(startTime, System.currentTimeMillis());
     }
 
     private byte[] getFileContent(String filePath) {
@@ -480,34 +481,6 @@ public class Lab05_1 {
         File file = new File(filePath);
         return file.exists();
     }
-
-    private String getResourceFolderPath() {
-        String currentPath = Paths.get("").toAbsolutePath().toString();
-        String resourceFolderPath = currentPath + File.separator + "resources" + File.separator;
-        if (!new File(resourceFolderPath).exists()) {
-            new File(resourceFolderPath).mkdir();
-        }
-        return resourceFolderPath;
-    }
-
-    private void printTimePassed(long startTimeMillis, long endTimeMillis) {
-        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:ms");
-        // print startTime in format HH:mm:ss
-        PrintUtils.printInlineWithColor("Start time: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
-        PrintUtils.printInlineWithColor(formatter.format(new Date(startTimeMillis)) + "\n");
-        // print endTime in format HH:mm:ss
-        PrintUtils.printInlineWithColor("End time: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
-        PrintUtils.printInlineWithColor(formatter.format(new Date(endTimeMillis)) + "\n");
-
-        // print time passed in seconds
-        PrintUtils.printInlineWithColor("Time passed: ", PrintUtils.ConsoleColors.BLUE_BRIGHT);
-        PrintUtils.printInlineWithColor(calculateDiffTimeInMiliseconds(startTimeMillis, endTimeMillis) + " ms\n");
-    }
-
-    private long calculateDiffTimeInMiliseconds(long startTimeMillis, long endTimeMillis) {
-        return Math.abs(startTimeMillis - endTimeMillis);
-    }
-
     
     /**
      * @param cipher cipher object
@@ -647,6 +620,5 @@ public class Lab05_1 {
         try (FileOutputStream fos = new FileOutputStream(outputFileName, !fistTimeDumping)) {
             fos.write(bytes);
         }
-
     }
 }

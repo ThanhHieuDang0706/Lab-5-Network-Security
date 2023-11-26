@@ -25,8 +25,8 @@ All files needed for exercise should be placed in resources file
 - Measure execution time of selected [mode](https://manansingh.github.io/Cryptolab-Offline/c13-des-modes.html)
 
 To compile, run following commands (You are at the `src` folder):
-```
-javac Lab05_1.java PrinUtils.java
+```powershell
+javac Lab05_1.java PrintUtils.java
 java Lab05_1
 ```
 Or you can use any IDE to run the program.
@@ -39,3 +39,14 @@ Some results of the program
 | ![CBC Padding 10mb](resources/10MB_CBC_PADDING.png)   | ![ECB mode no padding](resources/100MB_DES-ECB-NoPadding.png)   | ![ECB with padding](resources/1GB_ECB_PKCS5PADDING.png)   |
 | <small>Encrypted time: 438ms | <small>Encrypted time: 5384ms  | <small>Encrypted time: 45697ms  |
 | <small>Decrypted time: 292ms |<small>Decrypted time: 3626ms  | <small>Decrypted time: 36129ms  |
+
+### Exercise 2
+- File `Lab05_2.java` is the main file
+- The output will be either `rsa-output.enc` or `rsa-output.dec` depending on the action
+
+Similarly to exercise 1, to compile, run following commands (You are at the `src` folder):
+```powershell
+javac Lab05_2.java PrintUtils.java
+java Lab05_2
+```
+![RSA Result with 10MB file](resources/10MB_RSA.png)
