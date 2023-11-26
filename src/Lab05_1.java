@@ -43,7 +43,7 @@ public class Lab05_1 {
      * This class represents the available choices for type selection.
      * It contains constants representing the choices to decode, encode, or exit.
      */
-    private static class TypeSelectionChoice {
+    public static class TypeSelectionChoice {
         static final int DECRYPT = 1;
         static final int ENCRYPT = 2;
         static final int EXIT = 3;
@@ -55,7 +55,7 @@ public class Lab05_1 {
      * This class represents the mode selection options for encryption.
      * It provides constants for different encryption modes.
      */
-    private static class ModeSelection {
+    public static class ModeSelection {
         static final int DES_ECB_PKCS5_PADDING = 1;
         static final int DES_ECB_NO_PADDING = 2;
         static final int DES_CBC_PKCS5_PADDING = 3;
@@ -254,7 +254,7 @@ public class Lab05_1 {
         return bytes;
     }
 
-    private Key getSecretKey(byte[] keyBytes) throws InvalidKeyException, NoSuchAlgorithmException,
+    public Key getSecretKey(byte[] keyBytes) throws InvalidKeyException, NoSuchAlgorithmException,
             InvalidKeySpecException {
         SecretKeySpec desKeySpec = new SecretKeySpec(keyBytes, "DES");
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES");
@@ -277,7 +277,7 @@ public class Lab05_1 {
      * @throws InterruptedException
      * @throws Exception
      */
-    private void doDESAction(int type, int mode, String keyFilePath, String fileToProcessPath)
+    public void doDESAction(int type, int mode, String keyFilePath, String fileToProcessPath)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException,
             InterruptedException, IOException {
 
@@ -501,7 +501,7 @@ public class Lab05_1 {
      * @description if mode is CBC, append iv to the beginning of the result
      * @description if mode is padding, add padding to the content ON EACH CHUNK if there are multiple chunks
      */
-    private byte[] encrypt(Cipher cipher, int type, int mode, Key secretKey, byte[] content, boolean finalChunk)
+    public byte[] encrypt(Cipher cipher, int type, int mode, Key secretKey, byte[] content, boolean finalChunk)
             throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 
@@ -559,7 +559,7 @@ public class Lab05_1 {
      * @description if mode is CBC, remove iv from the beginning of the content
      * @description if mode is padding, remove padding from the content ON THE FINAL CHUNK
      */
-    private byte[] decrypt(Cipher cipher, int type, int mode, Key secretKey, byte[] content, boolean finalChunk)
+    public byte[] decrypt(Cipher cipher, int type, int mode, Key secretKey, byte[] content, boolean finalChunk)
             throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException,
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] bytesWithPaddingIfNeeded = getBytesWithPaddingIfNeeded(content, type, mode);
