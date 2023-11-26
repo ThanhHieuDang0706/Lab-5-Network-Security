@@ -39,8 +39,9 @@ public class Lab05_3 {
         return signatureInstance.verify(signature);
     }
 
-    public void signAndEncrypt(String filePath, String keyUsedToEncrypt, String privateKeyContent) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, SignatureException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public void signAndEncrypt(String filePath, String keyUsedToEncrypt, String privateKeyPath) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, SignatureException, IllegalBlockSizeException, BadPaddingException, IOException {
         String message = readFile(filePath);
+        String privateKeyContent = readFile(privateKeyPath);
         byte[] signature = sign(message, privateKeyContent);
         String signatureString = Base64.getEncoder().encodeToString(signature);
 
